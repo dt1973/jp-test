@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jp Test</title>
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_include_tag "application" %>
+    <%= csrf_meta_tags %>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+  </head>
+  <body>
+    <header>
+      <% if user_signed_in? %>
+        <%= link_to current_user.email, main_app.edit_user_registration_path %>
+        <%= link_to "Sign out", main_app.destroy_user_session_path, :method => :delete %>
+        <% if current_user.forem_admin %>
+          <%= link_to "Administrate", forem.admin_root_url %>
+        <% end %>
+      <% else %>
+        <%= link_to "Sign up", main_app.new_user_registration_path %>
+        <%= link_to "Sign in", main_app.new_user_session_path %>
+      <% end %>
+    </header>
+    <%= yield %>
+  </body>
+</html>
+
