@@ -22,8 +22,19 @@ $.topicPoller = {
   },
   request: function() {
     console.log('Ran `request`');
-    $.get($('#topics').data('url'), {
-      after: $('.topic').last()
+
+    var dataUrl = $('#topics').data('url');
+
+    console.log(dataUrl);
+
+    $.get(dataUrl, function(data) {
+      var topics = $("#topics");
+
+      topics.html(data);
+
+      $("data").appendTo(topics);
+
+      console.log("Load was performed.");
     });
   },
   addTopics: function(topics) {
