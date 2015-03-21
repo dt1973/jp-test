@@ -27,27 +27,44 @@ $.topicPoller = {
 
     console.log(dataUrl);
 
+    // http://stackoverflow.com/questions/26071825/conditional-caching-in-jquery-if-modified-since-returns-304-response-but-doesn
+
+    $.ajax({
+      url: dataUrl,
+      type:"GET",
+      cache: true,
+      ifModified: true,
+      Async: true,
+      beforeSend: function (xhr){ 
+        xhr.setRequestHeader("If-Modified-Since", xhr.getResponseHeader('Last-Modified'));
+      },
+      success: function(data){
+        console.log('We have change!');
+      }
+    });
+  },
+  addTopics: function(topics) {
+    console.log('Ran `addTopics`');
+
+    var dataUrl = $('#topics').data('url');
     $.get(dataUrl, function(data) {
       var topics = $("#topics");
 
       topics.html(data);
 
-      $("data").appendTo(topics);
-
-      console.log("Load was performed.");
-    });
-  },
-  addTopics: function(topics) {
-    console.log('Ran `addTopics`');
-    if($('#topics').length) {
-      $('.topic').append($('#topics').hide());
+      $("data").appendTo(topics).hide();
       $('#show_topics').show();
-    }
+
+      console.log('New topics were added');
+    });
+
     this.poll();
   },
   showTopics: function(e) {
     console.log('Ran `showTopics`');
+
     e.preventDefault();
+
     $('.topic').show();
     $('#show_topics').hide();
   }
