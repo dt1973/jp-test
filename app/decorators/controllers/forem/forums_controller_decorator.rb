@@ -6,6 +6,6 @@ Forem::ForumsController.class_eval do
   # https://robots.thoughtbot.com/introduction-to-conditional-http-caching-with-rails
 
   def set_timestamp
-    fresh_when @topics
+    fresh_when last_modified: @topics.first.updated_at, etag: @topics
   end
 end

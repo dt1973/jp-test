@@ -1,24 +1,22 @@
-// This is a manifest file that'll be compiled into application.js, which will include all the files
-// listed below.
-//
-// Any JavaScript/Coffee file within this directory, lib/assets/javascripts, vendor/assets/javascripts,
-// or any plugin's vendor/assets/javascripts directory can be referenced here using a relative path.
-//
-// It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
-// compiled file.
-//
-// Read Sprockets README (https://github.com/sstephenson/sprockets#sprockets-directives) for details
-// about supported directives.
-//
 //= require jquery
 //= require jquery_ujs
 //= require forem
 //= require_tree .
 
+var globalVar = {};
+
+globalVar.firstRequest = true;
+globalVar.lastModifiedDate;
+
 $.topicPoller = {
   poll: function() {
     console.log('Ran `poll`');
+
+    // `setInterval` is evil, refrain from using
+
     setTimeout(this.request, 5000);
+
+//setInterval(this.request, 5000);
   },
   request: function() {
     console.log('Ran `request`');
@@ -35,11 +33,37 @@ $.topicPoller = {
       cache: true,
       ifModified: true,
       Async: true,
-      beforeSend: function (xhr){ 
-        xhr.setRequestHeader("If-Modified-Since", xhr.getResponseHeader('Last-Modified'));
+      beforeSend: function(xhr){
+        if(!globalVar.firstRequest) {
+          xhr.setRequestHeader("If-Modified-Since", globalVar.lastModifiedDate);
+        }
       },
-      success: function(data){
-        console.log('We have change!');
+      success: function(html, textStatus, xhr){
+        if(globalVar.firstRequest) {
+          globalVar.currentDate = xhr.getResponseHeader('Date');
+          globalVar.lastModifiedDate = xhr.getResponseHeader('Last-Modified');
+
+          console.log(globalVar.currentDate);
+          console.log(globalVar.lastModifiedDate);
+
+          // Start again
+
+          $.topicPoller.poll();
+
+          globalVar.firstRequest = false;
+
+          console.log('First');
+        } else {
+          console.log('Subsequent');
+
+          // if(???) {
+          //   console.log('We have change! Proceeding to fetch the actual content...');
+          //   $.topicPoller.addTopics();
+          // }
+        }
+      },
+      error: function(xhr, textStatus, errorThrown) {
+        console.log(textStatus, errorThrown);
       }
     });
   },
@@ -47,6 +71,7 @@ $.topicPoller = {
     console.log('Ran `addTopics`');
 
     var dataUrl = $('#topics').data('url');
+
     $.get(dataUrl, function(data) {
       var topics = $("#topics");
 
@@ -57,6 +82,8 @@ $.topicPoller = {
 
       console.log('New topics were added');
     });
+
+    // Start again
 
     this.poll();
   },
@@ -73,7 +100,9 @@ $.topicPoller = {
 $(function() {
   if($('#topics').length) {
     console.log('Ran `poll`');
+
     $.topicPoller.poll();
+
     $('#show_topics a').click($.topicPoller.showTopics);
   }
 });
