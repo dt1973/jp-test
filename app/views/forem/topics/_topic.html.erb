@@ -1,4 +1,4 @@
-<tr class="topic <%= cycle('odd', 'even') %> <%= topic.locked? ? 'locked' : 'unlocked' %>">
+<tr id="topic_<%= topic.id %>" class="topic">
   <td class='icon'>
     <% if topic.locked? %>
       <span class='lock icon'></span>

@@ -35,16 +35,15 @@ $.topicPoller = {
       Async: true,
       beforeSend: function(xhr){
         if(!globalVar.firstRequest) {
+
+          // Set date for `ifModified` above
+
           xhr.setRequestHeader("If-Modified-Since", globalVar.lastModifiedDate);
         }
       },
       success: function(html, textStatus, xhr){
         if(globalVar.firstRequest) {
-          globalVar.currentDate = xhr.getResponseHeader('Date');
           globalVar.lastModifiedDate = xhr.getResponseHeader('Last-Modified');
-
-          console.log(globalVar.currentDate);
-          console.log(globalVar.lastModifiedDate);
 
           // Start again
 
@@ -56,10 +55,20 @@ $.topicPoller = {
         } else {
           console.log('Subsequent');
 
-          // if(???) {
-          //   console.log('We have change! Proceeding to fetch the actual content...');
-          //   $.topicPoller.addTopics();
-          // }
+
+          if(textStatus != "notmodified") {
+            console.log('We have change!');
+
+            // Add topics with the HTML we've received
+
+            $.topicPoller.addTopics(html);
+          } else {
+            console.log("Server says not modified");
+
+            // Start again
+
+            $.topicPoller.poll();
+          }
         }
       },
       error: function(xhr, textStatus, errorThrown) {
@@ -67,21 +76,20 @@ $.topicPoller = {
       }
     });
   },
-  addTopics: function(topics) {
+  addTopics: function(html) {
     console.log('Ran `addTopics`');
 
-    var dataUrl = $('#topics').data('url');
-
-    $.get(dataUrl, function(data) {
-      var topics = $("#topics");
-
-      topics.html(data);
-
-      $("data").appendTo(topics).hide();
-      $('#show_topics').show();
-
-      console.log('New topics were added');
+    var existingTopics = $.map($('.topic'), function(elm) { 
+      return elm.id; 
     });
+
+    var newTopic = $(html).find('.topic').not('#' + existingTopics.join(', #'));
+
+    newTopic.prependTo($('.topics tbody')).hide();
+
+    $('#show_topics').show();
+
+    console.log('New topics were added');
 
     // Start again
 
